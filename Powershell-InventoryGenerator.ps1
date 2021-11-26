@@ -26,7 +26,7 @@ if ($Exists -eq $null){
 	$CPU = Get-ItemProperty Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0 -Name ProcessorNameString | Select-Object -ExpandProperty ProcessorNameString
 
 	# RAM amount, Dual-channel or Single-Channel and speed
-	$TotalRAM = ($Computerinfo.CsPhyicallyInstalledMemory / 1mb).ToString() + "GB"
+	$TotalRAM = ($Computerinfo.CsPhyicallyInstalledMemory / 1mb).ToString()
 	$RAMSpeed = Get-WmiObject CIM_physicalmemory | Select-Object -first 1 -ExpandProperty Speed
 	if ((Get-WmiObject CIM_physicalmemory | Select-Object -ExpandProperty Speed).Count -ge 2){$RAMChannel = "Dual-Channel"} else {$RAMChannel = "Single-Channel"}
 	$RAM = $TotalRAM.ToString() +"GB "+ $RAMSpeed.ToString() +"MT/s " + $RAMChannel
