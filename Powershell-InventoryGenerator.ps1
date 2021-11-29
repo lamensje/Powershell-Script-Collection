@@ -8,13 +8,15 @@ $Path = "\\fs1\Logs$\Inventarisatie_" + $Date + ".csv"
 $Exists = Get-Content -Path $Path -ErrorAction SilentlyContinue | Select-String -Pattern $env:computername 
 
 if ($Exists -eq $null){
+	# Stores domain name without .local
+	$Domain = ($computerinfo.CsDomain -split "\.") | Select-Object -First 1
 	
-	# First in the list connected (status Up) Physical network interface
-	$adapter = Get-NetAdapter -Physical | Where-Object Status -Like "Up" | Select-Object -First 1
+	# First in the list connected (status Up) Physical network interface with the highest ifIndex
+	$adapter = Get-NetAdapter -Physical | Where-Object Status -Like "Up" | Sort-Object ifIndex -Descending | Select-Object -First 1
 	
 	# Use motherboard model number instead of SKU if not OEM
 	$PCModel = "Unknown"
-	if ($Computerinfo.CsSystemSKUNumber.ToString() -eq "To Be Filled By O.E.M.") {$PCModel = (Get-ItemProperty Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS -Name BaseBoardProduct | Select-Object -ExpandProperty BaseBoardProduct)} else {$PCModel = (Get-ItemProperty Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS -Name SystemProductName | Select-Object -ExpandProperty SystemProductName) + " (" + $Computerinfo.CsSystemSKUNumber.ToString() + ")"}
+	if ($Computerinfo.CsSystemSKUNumber.ToString() -eq "To Be Filled By O.E.M." -or $Computerinfo.CsSystemSKUNumber.ToString() -like "*Default*") {$PCModel = (Get-ItemProperty Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS -Name BaseBoardProduct | Select-Object -ExpandProperty BaseBoardProduct)} else {$PCModel = (Get-ItemProperty Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS -Name SystemProductName | Select-Object -ExpandProperty SystemProductName) + " (" + $Computerinfo.CsSystemSKUNumber.ToString() + ")"}
 	
 	# BIOS type (Legacy / UEFI), version and release date
 	$BIOS = $Computerinfo.BiosSMBIOSBIOSVersion.ToString() + " (" + $Computerinfo.BiosFirmwareType.ToString() + ")" 
@@ -22,24 +24,26 @@ if ($Exists -eq $null){
 	# Windows version (Home / Pro for exmaple) and version (21H2 for exmaple)
 	$OS = $Computerinfo.OsName.ToString() + " " + (Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name DisplayVersion | Select-Object -ExpandProperty DisplayVersion).ToString()
 
-	# CPU name
+	# CPU name + count
 	$CPU = Get-ItemProperty Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0 -Name ProcessorNameString | Select-Object -ExpandProperty ProcessorNameString
+	if ($Computerinfo.CsNumberOfProcessors -ge 2) {$CPU += (" (x" + $Computerinfo.CsNumberOfProcessors.Tostring() + ")")}
 
-	# RAM amount, Dual-channel or Single-Channel and speed
+	# RAM amount, config and speed
 	$TotalRAM = ($Computerinfo.CsPhyicallyInstalledMemory / 1mb).ToString()
 	$RAMSpeed = Get-WmiObject CIM_physicalmemory | Select-Object -first 1 -ExpandProperty Speed
-	if ((Get-WmiObject CIM_physicalmemory | Select-Object -ExpandProperty Speed).Count -ge 2){$RAMChannel = "Dual-Channel"} else {$RAMChannel = "Single-Channel"}
-	$RAM = $TotalRAM.ToString() +"GB "+ $RAMSpeed.ToString() +"MT/s " + $RAMChannel
+	Get-WmiObject CIM_physicalmemory | Select-Object Capacity | ForEach-Object -Begin {$RAMconfig = "("} -Process {$RAMconfig += (($_.Capacity / 1GB).Tostring() + "+")} -End {$RAMconfig = $RAMconfig.TrimEnd('+'); $RAMconfig += ")"}
+	$RAM = $TotalRAM.ToString() +"GB "+ $RAMSpeed.ToString() +"MT/s " + $RAMconfig
 
-	# Primary GPU name
-	$GPU = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WinSAT" -Name PrimaryAdapterString | Select-Object -ExpandProperty PrimaryAdapterString
+	# GPU names
+	$GPU = $null
+	Get-WmiObject CIM_VideoController | Select-Object Name | ForEach-Object {$GPU += ($_.Name + " + ")} -End {$GPU = $GPU.TrimEnd(' + ')}
 
 	# Disks name, Bus type (Sata / NVMe) and type (HDD / SSD)
 	$Disks = $null
-	Get-PhysicalDisk | Select FriendlyName, MediaType, BusType | ForEach-Object -Process {$Disks += $_.FriendlyName + " " + $_.BusType + " " + $_.MediaType + " "}
+	Get-PhysicalDisk | Select FriendlyName, MediaType, BusType | ForEach-Object -Process {$Disks += $_.FriendlyName + " (" + $_.BusType + " " + $_.MediaType + ") + "} -End {$Disks = $Disks.TrimEnd(' + ')}
 
-	# Boot drive free space in GB
-	$DiskFree = ([math]::Round((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DriveType -eq "3" } | Select-Object -ExpandProperty FreeSpace) / 1gb)).Tostring() + "GB"
+	# Boot (C:\) drive free space in GB
+	$DiskFree = ([math]::Round((Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DeviceID -eq "C:" }| Select-Object -ExpandProperty FreeSpace) / 1gb)).Tostring() + "GB"
 	
 	# Read Office verison
 	$ospp = $null
@@ -58,13 +62,9 @@ if ($Exists -eq $null){
 	$OfficeLicenceStatus = (cscript $ospp /dstatus)
 	$OfficeKey = ((($OfficeLicenceStatus | Select-String "Last*") -Split ":" | Select-String -NotMatch "Last*") | Select-Object -First 1).ToString() + ((($OfficeLicenceStatus | Select-String "STATUS*") -Split ":" | Select-String -NotMatch "STATUS*") | Select-Object -First 1).ToString()
 
-	# Userprofile list
-	$ProfileList = $null
-	$Profiles = Get-ChildItem -Path "C:\Users" | Select-Object Name | Where-Object Name -NotLike "Public" | Where-Object Name -NotLike "testuser" | Where-Object Name -NotLike "Administrator" | Where-Object Name -NotLike "localadmin"
-	foreach ($profile in $Profiles) {
-		$ProfileList += ($profile.Name + " ")
-	}
-	
+	# Userprofile list, removing occasional domain name after username (in the most complicated way possible, probably)
+	$Profiles = $null
+	Get-ChildItem -Path "C:\Users" | Where-Object Name -NotLike "Public" | Where-Object Name -NotLike "testuser" | Where-Object Name -NotLike "Administrator" | Where-Object Name -NotLike "localadmin" | Select-Object Name | ForEach-Object {if ($_.Name -Like ("*" + $Domain)) {$_.Name = $_.Name.Substring(0,$_.Name.Length-($Domain.Length+1))}; $Profiles += ($_.Name + ", ")} -End {$Profiles = $Profiles.TrimEnd(', ')}
 
 	# Filling object with collected data
 	$specs =[pscustomobject]@{
@@ -80,7 +80,7 @@ if ($Exists -eq $null){
 		'Videokaart' = $GPU
 		'Schijf Model' = $Disks
 		'Vrije ruimte opstartschijf' = $DiskFree
-		'Profielen op schijf' = $ProfileList
+		'Profielen op schijf' = $Profiles
 		'Office versie' = $OfficeVerision
 		'Office Licentie' = $OfficeKey
     }
