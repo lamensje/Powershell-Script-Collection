@@ -11,9 +11,9 @@ Currently reads out (in Dutch names):
 - PC model number
 - BIOS version and type
 - Windows version
-- CPU name
+- CPU(s) name
 - RAM amount, speed and layout
-- GPU
+- GPU(s)
 - Disk model name
 - Boot disk free
 - Userprofiles on disk
