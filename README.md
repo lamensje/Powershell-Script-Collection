@@ -1,3 +1,6 @@
+I'm new to powershell, this code is quite messy but it works. Take what you need.
+Some generate output in Dutch, most comments and variables are in English though.
+
 # AddPrinters
 
 Temporairly allows driver installation to user, adds printer with driver, then restricts printer driver installation to administrators again for security.
@@ -21,7 +24,6 @@ Currently used to create an overview on what computer a user has logged in, with
 # Powershell-InventoryGenerator
 
 Automatically generates a .CSV file containing computer information after this powershell script is deployed to run on each machine.
-I'm new to powershell, this code is quite messy but it works. Take what you need.
 
 Currently reads out (in Dutch names):
 - Windows username
@@ -39,3 +41,13 @@ Currently reads out (in Dutch names):
 - Userprofiles on disk
 - Installed Office version name
 - Office last 5 digits of key and status 
+
+# SickyNotesRoamingSync
+
+Makes Sticy Notes from the windows 10 App sync between computers using the roaming profile directory.
+Set as script during user logon and logoff using GPO.
+
+# SilentSoftwareDeployStartup
+
+Silently installs software in the background. 
+Also works as GPO Computer startup script.
