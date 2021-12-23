@@ -1,5 +1,5 @@
-I'm new to powershell, this code is quite messy but it works. Take what you need.
-Some generate output in Dutch, most comments and variables are in English though.
+I'm new to powershell, so expect this code is possibly quite messy and inefficient. Take what you need.
+Some scripts generate output in Dutch, most comments and variables are in English though.
 
 # AddPrinters
 
