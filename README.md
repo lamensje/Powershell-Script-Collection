@@ -1,9 +1,19 @@
 I'm new to powershell, so expect this code is possibly quite messy and inefficient. Take what you need.
 Some scripts generate output in Dutch, most comments and variables are in English though.
 
+# PrinterInktLevelsSNMP
+
+Checks printer inkt and toner levels using SNMP, used on both a mix of HP and Brother printers. Perhaps not completely accurate.
+- Shows per color (if any) inkt levels % and printer status
+- Shows summary with items <20% life left and completely empty
+
 # AddPrinters
 
 Temporairly allows driver installation to user, adds printer with driver, then restricts printer driver installation to administrators again for security.
+
+# FixOutlookShortcut
+
+Replaces Outlook shortcut in start menu for the current user with the right file path (32 or 64 bit), depending on what's installed on the computer.
 
 # CleanupExchangeLogs
 
