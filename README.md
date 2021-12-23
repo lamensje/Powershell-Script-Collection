@@ -23,11 +23,12 @@ Currently used to create an overview on what computer a user has logged in, with
 
 # Powershell-InventoryGenerator
 
-Automatically generates a .CSV file containing computer information after this powershell script is deployed to run on each machine.
+Automatically generates a .CSV file containing detailed computer information. Can be set as GPO User logoff script. Generates a daily report and a seperate sorted one which is always up-to-date for easy copy-paste in an existing excel file with the same layout.
 
 Currently reads out (in Dutch names):
 - Windows username
 - Windows PC name
+- OU directory name
 - Ethernet MAC Address
 - Ethernet link speed
 - PC model number
@@ -36,7 +37,7 @@ Currently reads out (in Dutch names):
 - CPU(s) name
 - RAM amount, speed and layout
 - GPU(s)
-- Disk model name
+- Disk model names
 - Boot disk free
 - Userprofiles on disk
 - Installed Office version name
