@@ -4,7 +4,7 @@ Temporairly allows driver installation to user, adds printer with driver, then r
 
 # CleanupExchangeLogs
 
-Cleans up Exchange server 2013 logs (plus inetpub) older than 7 weeks to free up some space
+Cleans up Exchange server 2013 logs (plus inetpub) older than 7 weeks to free up some space.
 - DailyPerformanceLogs
 - HttpProxy
 - Ews
@@ -12,6 +12,11 @@ Cleans up Exchange server 2013 logs (plus inetpub) older than 7 weeks to free up
 - MailboxAssistantsLog
 - RpcHttp
 - inetpub
+
+# LogFilesReport
+
+Reads last line in .log files in specific folder, parses specific string and creates an HTML overview.
+Currently used to create an overview on what computer a user has logged in, with timestamp.
 
 # Powershell-InventoryGenerator
 
