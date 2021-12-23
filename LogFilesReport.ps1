@@ -1,3 +1,8 @@
+# Example logfile input:
+# LOGOUT testuser di 21-12-2021  8:30:24,67 DOMAIN-PC-036 
+# LOGIN  testuser2 fr 21-12-2021 16:36:45,28 DOMAIN-PC-094  
+
+
 $Path = '\\fs1\Logs$'
 $Output = '\\fs1\Logs$\Inventarisatie\gebruikersoverzicht.html'
 
