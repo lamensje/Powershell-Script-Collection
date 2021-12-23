@@ -1,3 +1,18 @@
+# AddPrinters
+
+Temporairly allows driver installation to user, adds printer with driver, then restricts printer driver installation to administrators again for security.
+
+# CleanupExchangeLogs
+
+Cleans up Exchange server 2013 logs (plus inetpub) older than 7 weeks to free up some space
+- DailyPerformanceLogs
+- HttpProxy
+- Ews
+- RPC Client Access
+- MailboxAssistantsLog
+- RpcHttp
+- inetpub
+
 # Powershell-InventoryGenerator
 
 Automatically generates a .CSV file containing computer information after this powershell script is deployed to run on each machine.
