@@ -2,11 +2,13 @@
 $Computerinfo = Get-ComputerInfo
 
 $Date = Get-Date -UFormat %Y.%m.%d
-$PathDaily= "\\fs1\Logs$\Inventarisatie\daily\Inventarisatie_" + $Date + ".csv"
-$Path= "\\fs1\Logs$\Inventarisatie\Inventarisatie.csv"
+$WorkingDirectory = "\\fs1\Logs$\Inventarisatie"
+$DailyReport = "$WorkingDirectory\daily\Inventarisatie_" + $Date + ".csv"
+$Report = "$WorkingDirectory\Inventarisatie.csv"
+$ReportTemp = "$env:temp\Inventarisatie.csv"
 
 # Check if computer already exists in inventory, skips otherwise
-$ExistsDaily = Get-Content -Path $PathDaily -ErrorAction SilentlyContinue | Select-String -Pattern $env:computername
+$ExistsDaily = Get-Content -Path $DailyReport -ErrorAction SilentlyContinue | Select-String -Pattern $env:computername
 
 # Stores domain name without .local
 $Domain = ($computerinfo.CsDomain -split "\.") | Select-Object -First 1
@@ -63,7 +65,15 @@ Get-ItemProperty -Path $DisplayVersion.PSPath | ForEach-Object {$OfficeVerision 
 
 # Office Licence
 $OfficeLicenceStatus = (cscript $ospp /dstatus)
-$OfficeKey = ((($OfficeLicenceStatus | Select-String "Last*") -Split ":" | Select-String -NotMatch "Last*") | Select-Object -First 1).ToString() + ((($OfficeLicenceStatus | Select-String "STATUS*") -Split ":" | Select-String -NotMatch "STATUS*") | Select-Object -First 1).ToString()
+
+if (($OfficeLicenceStatus | Select-String "LICENSED") -ne $null) {
+	$OfficeParsed = (($OfficeLicenceStatus | Select-String "LICENSED" -Context 1) -split "`n" | Select-String -NotMatch "EXPIRATION") -split ": " | Select-String -NotMatch "STATUS", "key"
+	$OfficeKey = $OfficeParsed[1].ToString()
+	$OfficeLicence = $OfficeParsed[0].ToString()
+} else {
+	$OfficeLicence = $null
+	$OfficeKey = ((($OfficeLicenceStatus | Select-String "Last*") -Split ":" | Select-String -NotMatch "Last*") | Select-Object -First 1).ToString() + ((($OfficeLicenceStatus | Select-String "STATUS*") -Split ":" | Select-String -NotMatch "STATUS*") | Select-Object -First 1).ToString()
+}
 
 # Userprofile list, removing occasional domain name after username (in the most complicated way possible, probably)
 $Profiles = $null
@@ -86,21 +96,25 @@ $specs =[pscustomobject]@{
 	'Vrije ruimte opstartschijf' = $DiskFree
 	'Profielen op schijf' = $Profiles
 	'Office versie' = $OfficeVerision
-	'Office Licentie' = $OfficeKey
+	'Office Licentie' = $OfficeKey + $OfficeLicence
 }	
 
 if ($ExistsDaily -eq $null){
 	# Exporting specs to daily inventory
-    $specs | Export-CSV $PathDaily -Append -NoTypeInformation -Force
+    $specs | Export-CSV $DailyReport -Append -NoTypeInformation -Force -Delimiter ";" 
 }
 
 # Remove existing inventory entry
-$inventory = get-content -Path $Path -ErrorAction SilentlyContinue | select-string -pattern $env:computername -notmatch
-Set-Content $Path $inventory
+$inventory = get-content -Path $Report -ErrorAction SilentlyContinue | select-string -pattern $env:computername -notmatch
+Set-Content $ReportTemp $inventory
 
 # Export inventory with up-to-date information
-$specs | Export-CSV $Path -Append -NoTypeInformation -Force
+$specs | Export-CSV $ReportTemp -Append -NoTypeInformation -Force -Delimiter ";"
 
 # Sort inventory by PC Name, not a one-liner, doesn't work
-$inventorySorted = Import-Csv $path | sort-object "PC Naam" 
-$inventorySorted | Export-Csv $path -NoTypeInfo
+$inventorySorted = Import-Csv $ReportTemp -Delimiter ";" | sort-object "PC Naam" 
+$inventorySorted | Export-Csv $ReportTemp -NoTypeInformation -Force -Delimiter ";"
+
+# Remove " and empty lines
+$ReportClean = ((Get-Content $ReportTemp) -Replace "`"","") | ? {$_.trim() -ne ""}
+Set-Content $Report $ReportClean
