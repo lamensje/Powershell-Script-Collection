@@ -2,7 +2,7 @@
 $Computerinfo = Get-ComputerInfo
 
 $Date = Get-Date -UFormat %Y.%m.%d
-$WorkingDirectory = "\\fs1\Logs$\Inventarisatie"
+$WorkingDirectory = "E:\PC\Sync\Downloads\Powershell-Script-Collection-main"
 $DailyReport = "$WorkingDirectory\daily\Inventarisatie_" + $Date + ".csv"
 $Report = "$WorkingDirectory\Inventarisatie.csv"
 $ReportTemp = "$env:temp\Inventarisatie.csv"
@@ -71,8 +71,8 @@ if (($OfficeLicence | Select-String "LICENSED") -ne $null) {
 	$OfficeKey = $OfficeParsed[1].ToString()
 	$OfficeLicenceStatus = ($OfficeParsed[0] -split "---")[1].ToString()
 } else {
-	$OfficeLicenceStatus = $null
-	$OfficeKey = ((($OfficeLicence | Select-String "Last*") -Split ":" | Select-String -NotMatch "Last*")[0].ToString() + (($OfficeLicence | Select-String "STATUS*") -Split ":" | Select-String -NotMatch "STATUS*")[0].ToString())
+	$OfficeLicenceStatus = (($OfficeLicence | Select-String "STATUS*") -Split ":" | Select-String -NotMatch "STATUS*")[0].ToString()
+	$OfficeKey = (($OfficeLicence | Select-String "Last*") -Split ":" | Select-String -NotMatch "Last*")[0].ToString()
 }
 
 # Userprofile list, removing occasional domain name after username (in the most complicated way possible, probably)
