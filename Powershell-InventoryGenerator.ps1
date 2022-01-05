@@ -59,7 +59,7 @@ if (Test-Path -Path $x32) {$Excel32 = Get-ChildItem -Recurse -Path $x32 -Filter 
 if (Test-Path -Path $x64) {$Excel64 = Get-ChildItem -Recurse -Path $x64 -Filter "EXCEL.EXE"}
 if ($Excel32) {$Excel = $Excel32; $ospp = $x32 + "\Office16\OSPP.VBS"}
 if ($Excel64) {$Excel = $Excel64; $ospp = $x64 + "\Office16\OSPP.VBS"}
-$DisplayVersion = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" -Name "DisplayVersion" -ErrorAction SilentlyContinue | Where-Object {$_.DisplayVersion -eq $Excel.VersionInfo.ProductVersion -and $_.PSChildName -notlike "{*}"}
+$DisplayVersion = Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" -Name "DisplayVersion" -ErrorAction SilentlyContinue | Where-Object {$_.DisplayVersion -eq ($Excel.VersionInfo.ProductVersion | Select-Object -First 1) -and $_.PSChildName -notlike "{*}"}
 $OfficeVerision = $null
 Get-ItemProperty -Path $DisplayVersion.PSPath | ForEach-Object {$OfficeVerision += ($_.PSChildName + " v" + $_.DisplayVersion + $(if ($_.InstallLocation -eq $x32) {" 32 Bit"} else {" 64 Bit "}))}
 
