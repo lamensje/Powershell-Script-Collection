@@ -36,7 +36,7 @@ if ($Computerinfo.CsNumberOfProcessors -ge 2) {$CPU += (" (x" + $Computerinfo.Cs
 # RAM amount, config and speed
 $TotalRAM = ($Computerinfo.CsPhyicallyInstalledMemory / 1mb).ToString()
 $RAMSpeed = Get-WmiObject CIM_physicalmemory | Select-Object -first 1 -ExpandProperty Speed
-Get-WmiObject CIM_physicalmemory | Select-Object Capacity | ForEach-Object -Begin {$RAMconfig = "("} -Process {$RAMconfig += (($_.Capacity / 1GB).Tostring() + "+")} -End {$RAMconfig = $RAMconfig.TrimEnd('+'); $RAMconfig += ")"}
+Get-WmiObject CIM_physicalmemory | Where-Object DeviceLocator -NotLike "*ROM*" | Select-Object Capacity | ForEach-Object -Begin {$RAMconfig = "("} -Process {$RAMconfig += (($_.Capacity / 1GB).Tostring() + "+")} -End {$RAMconfig = $RAMconfig.TrimEnd('+'); $RAMconfig += ")"}
 $RAM = $TotalRAM.ToString() +"GB "+ $RAMSpeed.ToString() +"MT/s " + $RAMconfig
 
 # GPU names
