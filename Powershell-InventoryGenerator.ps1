@@ -1,11 +1,24 @@
+param (
+	$WorkingDirectory = "\\fs1\Logs$\Inventarisatie",
+	$WorkingDirectoryDaily = "$WorkingDirectory\daily"
+)
 # Store computer info in variable
 $Computerinfo = Get-ComputerInfo
 
 $Date = Get-Date -UFormat %Y.%m.%d
-$WorkingDirectory = "E:\PC\Sync\Downloads\Powershell-Script-Collection-main"
-$DailyReport = "$WorkingDirectory\daily\Inventarisatie_" + $Date + ".csv"
 $Report = "$WorkingDirectory\Inventarisatie.csv"
 $ReportTemp = "$env:temp\Inventarisatie.csv"
+$DailyReport = "$WorkingDirectoryDaily\Inventarisatie_" + $Date + ".csv"
+
+# Check if working directory exists, otherwise creates
+if (!(Test-Path -Path $WorkingDirectory)) {
+	mkdir $WorkingDirectory | Out-Null
+	
+	# Same for daily folder
+	if (!(Test-Path -Path $WorkingDirectoryDaily)) {
+		mkdir $WorkingDirectoryDaily | Out-Null
+	}
+}
 
 # Check if computer already exists in inventory, skips otherwise
 $ExistsDaily = Get-Content -Path $DailyReport -ErrorAction SilentlyContinue | Select-String -Pattern $env:computername
