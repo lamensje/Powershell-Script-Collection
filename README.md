@@ -33,7 +33,8 @@ Currently used to create an overview on what computer a user has logged in, with
 
 # Powershell-InventoryGenerator
 
-Automatically generates a .CSV file containing detailed computer information. Can be set as GPO User logoff script. Generates a daily report and a seperate sorted one which is always up-to-date for easy copy-paste in an existing excel file with the same layout.
+Automatically generates a .CSV file containing detailed computer information. Can be set as GPO User logoff script. Generates a daily report and a seperate sorted one which is always up-to-date for easy copy-paste in an existing excel file with the same layout. 
+Accepts working directory as parameter.
 
 Currently reads out (in Dutch names):
 - Windows username
