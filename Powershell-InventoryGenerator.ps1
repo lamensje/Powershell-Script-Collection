@@ -43,7 +43,7 @@ $BIOS = $Computerinfo.BiosSMBIOSBIOSVersion.ToString() + " (" + $Computerinfo.Bi
 $OS = $Computerinfo.OsName.ToString() + " " + (Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name DisplayVersion | Select-Object -ExpandProperty DisplayVersion).ToString() -replace "Microsoft Windows ","W" -replace "Insider Preview ",""
 
 # CPU name + count
-$CPU = (Get-ItemProperty Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0 -Name ProcessorNameString | Select-Object -ExpandProperty ProcessorNameString) -replace "\s+ "," " -replace "`\(R`\)","" -replace "`\(TM`\)","" -replace "Processor",""
+$CPU = (Get-ItemProperty Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0 -Name ProcessorNameString | Select-Object -ExpandProperty ProcessorNameString) -replace "\s+ "," " -replace "`\(R`\)","" -replace "`\(TM`\)","" -replace "Processor","" -replace "CPU ",""
 if ($Computerinfo.CsNumberOfProcessors -ge 2) {$CPU += (" (x" + $Computerinfo.CsNumberOfProcessors.Tostring() + ")")}
 
 # RAM amount, config and speed
