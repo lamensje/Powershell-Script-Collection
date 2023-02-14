@@ -11,6 +11,10 @@ Checks printer inkt and toner levels using SNMP, used on both a mix of HP and Br
 
 Temporairly allows driver installation to user, adds printer with driver, then restricts printer driver installation to administrators again for security.
 
+# FixNetworkShareNames
+
+Removes (\\<IP Address of share>) from the network share name, which gets reset after a big windows feature upgrade.
+
 # FixOutlookShortcut
 
 Replaces Outlook shortcut in start menu for the current user with the right file path (32 or 64 bit), depending on what's installed on the computer.
