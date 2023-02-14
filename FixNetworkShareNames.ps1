@@ -1,0 +1,1 @@
+Get-ChildItem -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2\ | Where-Object Name -like '*`#`#*' | ForEach-Object {$name = $_.Name -split '#' | Select-Object -Last 1; New-ItemProperty -Path $_.PSPath -Name '_LabelFromReg' -Value $name}
