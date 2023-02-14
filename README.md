@@ -13,7 +13,7 @@ Temporairly allows driver installation to user, adds printer with driver, then r
 
 # FixNetworkShareNames
 
-Removes (\\<IP Address of share>) from the network share name, which gets reset after a big windows feature upgrade.
+Removes (\\\\"IP Address of share") from the network share name, which gets reset after a big windows feature upgrade.
 
 # FixOutlookShortcut
 
